@@ -1,4 +1,4 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { ethers } from "ethers";
@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "batches.json");
+const CHEMISTS_FILE = path.join(DATA_DIR, "chemists.json");
 
 const app = express();
 app.use(cors());
@@ -123,12 +124,45 @@ const ADMIN_CREDENTIALS = {
   password: "Harsh@58"
 };
 
-const CHEMIST_ACCOUNTS = {
+// Default chemist accounts seeded on first run
+const defaultChemists = {
   "harsh": "Harsh@Rx942#",
   "sumedh": "Sumedh!Med781$",
   "avadhut": "Avadhut*Pharma356&",
   "praditha": "Praditha#Pulse628^"
 };
+
+// Persistent Chemists Storage
+function loadChemists() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (fs.existsSync(CHEMISTS_FILE)) {
+      const raw = fs.readFileSync(CHEMISTS_FILE, "utf8");
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object" && Object.keys(parsed).length > 0) {
+        console.log(`👥 Loaded ${Object.keys(parsed).length} chemist accounts from storage`);
+        return parsed;
+      }
+    }
+    fs.writeFileSync(CHEMISTS_FILE, JSON.stringify(defaultChemists, null, 2), "utf8");
+    console.log("👥 Initialized chemist accounts with defaults");
+    return { ...defaultChemists };
+  } catch (err) {
+    console.error("⚠️ Error loading chemists file:", err.message);
+    return { ...defaultChemists };
+  }
+}
+
+function saveChemists(data) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(CHEMISTS_FILE, JSON.stringify(data, null, 2), "utf8");
+  } catch (err) {
+    console.error("⚠️ Failed to save chemists:", err.message);
+  }
+}
+
+let CHEMIST_ACCOUNTS = loadChemists();
 
 // 0. Authentication Login Endpoint
 app.post("/api/auth/login", (req, res) => {
@@ -323,6 +357,65 @@ app.post("/api/drugs/redeem", async (req, res) => {
   } catch (error) {
     console.error("Redeem error:", error);
     res.status(500).json({ error: error.message || "Failed to redeem batch" });
+  }
+});
+
+// 5. Delete Batch (Admin only)
+app.delete("/api/admin/batch/:batchNumber", (req, res) => {
+  try {
+    const batchNumber = decodeURIComponent(req.params.batchNumber).trim();
+    const index = batches.findIndex(b => b.batchNumber.toLowerCase() === batchNumber.toLowerCase());
+    if (index === -1) {
+      return res.status(404).json({ error: "Batch not found." });
+    }
+    batches.splice(index, 1);
+    saveBatches(batches);
+    res.json({ success: true, message: `Batch ${batchNumber} deleted successfully.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to delete batch" });
+  }
+});
+
+// 6. Get all Chemist accounts (Admin only - passwords masked)
+app.get("/api/admin/chemists", (req, res) => {
+  const list = Object.entries(CHEMIST_ACCOUNTS).map(([username]) => ({ username }));
+  res.json(list);
+});
+
+// 7. Add a new Chemist (Admin only)
+app.post("/api/admin/chemists", (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required." });
+    }
+    const key = username.trim().toLowerCase();
+    if (CHEMIST_ACCOUNTS[key]) {
+      return res.status(400).json({ error: `Chemist '${key}' already exists.` });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters." });
+    }
+    CHEMIST_ACCOUNTS[key] = password;
+    saveChemists(CHEMIST_ACCOUNTS);
+    res.json({ success: true, message: `Chemist '${key}' added successfully.`, username: key });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to add chemist" });
+  }
+});
+
+// 8. Remove a Chemist (Admin only)
+app.delete("/api/admin/chemists/:username", (req, res) => {
+  try {
+    const key = req.params.username.trim().toLowerCase();
+    if (!CHEMIST_ACCOUNTS[key]) {
+      return res.status(404).json({ error: `Chemist '${key}' not found.` });
+    }
+    delete CHEMIST_ACCOUNTS[key];
+    saveChemists(CHEMIST_ACCOUNTS);
+    res.json({ success: true, message: `Chemist '${key}' removed successfully.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to remove chemist" });
   }
 });
 

@@ -3,14 +3,6 @@
 import { useState, useEffect } from 'react'
 import { ScanLine, ShieldCheck, AlertTriangle, FlaskConical, CheckCircle2, Lock, LogOut } from 'lucide-react'
 
-// Authorized Chemist Accounts & Passwords (client-side fallback verification)
-const CHEMIST_ACCOUNTS: Record<string, string> = {
-  'harsh': 'Harsh@Rx942#',
-  'sumedh': 'Sumedh!Med781$',
-  'avadhut': 'Avadhut*Pharma356&',
-  'praditha': 'Praditha#Pulse628^'
-}
-
 export default function VerifyPage() {
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -29,7 +21,7 @@ export default function VerifyPage() {
   // Check saved chemist session
   useEffect(() => {
     const saved = localStorage.getItem('pharmpulse_chemist_user')
-    if (saved && CHEMIST_ACCOUNTS[saved.toLowerCase()]) {
+    if (saved) {
       setCurrentUser(saved)
     }
   }, [])
@@ -65,27 +57,10 @@ export default function VerifyPage() {
         setLoginPassword('')
         showToast(`Welcome, Chemist ${data.user.username}!`)
       } else {
-        // Fallback check
-        if (CHEMIST_ACCOUNTS[normalizedUser] && CHEMIST_ACCOUNTS[normalizedUser] === loginPassword) {
-          localStorage.setItem('pharmpulse_chemist_user', normalizedUser)
-          setCurrentUser(normalizedUser)
-          setLoginUsername('')
-          setLoginPassword('')
-          showToast(`Welcome, Chemist ${normalizedUser}!`)
-        } else {
-          setLoginError(data.error || 'Access Denied: Invalid Chemist credentials.')
-        }
+        setLoginError(data.error || 'Access Denied: Invalid Chemist credentials.')
       }
     } catch {
-      if (CHEMIST_ACCOUNTS[normalizedUser] && CHEMIST_ACCOUNTS[normalizedUser] === loginPassword) {
-        localStorage.setItem('pharmpulse_chemist_user', normalizedUser)
-        setCurrentUser(normalizedUser)
-        setLoginUsername('')
-        setLoginPassword('')
-        showToast(`Welcome, Chemist ${normalizedUser}!`)
-      } else {
-        setLoginError('Access Denied: Invalid Chemist credentials.')
-      }
+      setLoginError('Backend offline. Please try again later.')
     } finally {
       setLoginLoading(false)
     }
