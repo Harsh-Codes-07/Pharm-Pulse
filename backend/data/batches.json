@@ -1,0 +1,39 @@
+[
+  {
+    "drugName": "Vicks Inhaler",
+    "batchNumber": "IN-AUG-2026-5826",
+    "manufacturer": "Dr. Reddy's Laboratories Ltd.",
+    "location": "Pune Plant, Maharashtra, India",
+    "status": "Active",
+    "cloneAttempts": 0,
+    "adminCode": "1122",
+    "txHash": null
+  },
+  {
+    "drugName": "Pan-D (Pantoprazole + Domperidone) · 10s",
+    "batchNumber": "IN-PAR-2026-001",
+    "manufacturer": "Sun Pharmaceutical Industries Ltd.",
+    "location": "Halol, Gujarat, India",
+    "status": "Active",
+    "cloneAttempts": 0,
+    "adminCode": "1234"
+  },
+  {
+    "drugName": "Augmentin 625 Duo · 10s",
+    "batchNumber": "IN-AUG-2026-901",
+    "manufacturer": "GlaxoSmithKline Pharmaceuticals Ltd.",
+    "location": "Nashik, Maharashtra, India",
+    "status": "Active",
+    "cloneAttempts": 0,
+    "adminCode": "7788"
+  },
+  {
+    "drugName": "Covaxin (BBV152) · 10-Dose Vial",
+    "batchNumber": "IN-COV-2026-889",
+    "manufacturer": "Bharat Biotech International Ltd.",
+    "location": "Genome Valley, Hyderabad, India",
+    "status": "Active",
+    "cloneAttempts": 0,
+    "adminCode": "5544"
+  }
+]
