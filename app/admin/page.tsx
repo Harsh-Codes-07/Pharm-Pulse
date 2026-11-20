@@ -39,6 +39,22 @@ interface Batch {
   txHash?: string | null
 }
 
+const DEFAULT_MANUFACTURERS = [
+  'Dr. Pankaj Pharma',
+  'Sun Pharmaceutical Industries Ltd.',
+  'GlaxoSmithKline Pharmaceuticals Ltd.',
+  'Bharat Biotech International Ltd.',
+  'Dr. Reddy\'s Laboratories Ltd.',
+  'Cipla Limited',
+  'Serum Institute of India Pvt. Ltd.',
+  'Micro Labs Ltd.',
+  'Abbott India Ltd.',
+  'Mankind Pharma Ltd.',
+  'Torrent Pharmaceuticals Ltd.',
+  'Zydus Lifesciences Ltd.',
+  'Lupin Limited'
+]
+
 export default function AdminPage() {
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'
   const [currentUser, setCurrentUser] = useState<string | null>(null)
@@ -83,6 +99,11 @@ export default function AdminPage() {
   const [newChemistUsername, setNewChemistUsername] = useState('')
   const [newChemistPassword, setNewChemistPassword] = useState('')
 
+  // Manufacturers List State
+  const [manufacturers, setManufacturers] = useState<string[]>(DEFAULT_MANUFACTURERS)
+  const [showAddCompany, setShowAddCompany] = useState(false)
+  const [customCompanyInput, setCustomCompanyInput] = useState('')
+
   // Toast State
   const [toast, setToast] = useState('')
   const [toastType, setToastType] = useState<'success' | 'error'>('success')
@@ -90,7 +111,39 @@ export default function AdminPage() {
   useEffect(() => {
     const saved = localStorage.getItem('pharmpulse_admin_user')
     if (saved && saved === 'Harshwardhan') setCurrentUser(saved)
+
+    // Load custom added companies
+    const savedCompanies = localStorage.getItem('pharmpulse_custom_companies')
+    if (savedCompanies) {
+      try {
+        const parsed = JSON.parse(savedCompanies)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setManufacturers(prev => Array.from(new Set([...parsed, ...prev])))
+        }
+      } catch {}
+    }
   }, [])
+
+  const handleAddCompany = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    const trimmed = customCompanyInput.trim()
+    if (!trimmed) return
+    if (!manufacturers.includes(trimmed)) {
+      const updated = [trimmed, ...manufacturers]
+      setManufacturers(updated)
+      try {
+        const saved = localStorage.getItem('pharmpulse_custom_companies')
+        const customList = saved ? JSON.parse(saved) : []
+        if (!customList.includes(trimmed)) {
+          localStorage.setItem('pharmpulse_custom_companies', JSON.stringify([trimmed, ...customList]))
+        }
+      } catch {}
+      showToast(`Company '${trimmed}' added!`)
+    }
+    setNewManufacturer(trimmed)
+    setCustomCompanyInput('')
+    setShowAddCompany(false)
+  }
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg)
@@ -468,25 +521,79 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Manufacturer Name *</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: '#94a3b8' }}>Manufacturer Name *</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCompany(!showAddCompany)}
+                    style={{
+                      background: 'rgba(16,214,178,0.1)',
+                      border: '1px solid rgba(16,214,178,0.3)',
+                      color: '#10d6b2',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 8px',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    <Plus size={12} /> {showAddCompany ? 'Cancel' : 'Add Company'}
+                  </button>
+                </div>
+
+                {showAddCompany && (
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', background: 'rgba(16,214,178,0.06)', border: '1px solid rgba(16,214,178,0.25)', padding: '8px', borderRadius: '6px' }}>
+                    <input
+                      value={customCompanyInput}
+                      onChange={e => setCustomCompanyInput(e.target.value)}
+                      placeholder="Enter new company name..."
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleAddCompany()
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '7px 10px',
+                        background: '#090d16',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '4px',
+                        color: '#fff',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddCompany()}
+                      style={{
+                        padding: '7px 14px',
+                        background: '#10d6b2',
+                        border: 'none',
+                        color: '#000',
+                        fontWeight: 'bold',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
+
                 <select
                   value={newManufacturer}
                   onChange={e => setNewManufacturer(e.target.value)}
                   style={{ width: '100%', padding: '9px 12px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
                 >
-                  <option>Dr. Pankaj Pharma</option>
-                  <option>Sun Pharmaceutical Industries Ltd.</option>
-                  <option>GlaxoSmithKline Pharmaceuticals Ltd.</option>
-                  <option>Bharat Biotech International Ltd.</option>
-                  <option>Dr. Reddy's Laboratories Ltd.</option>
-                  <option>Cipla Limited</option>
-                  <option>Serum Institute of India Pvt. Ltd.</option>
-                  <option>Micro Labs Ltd.</option>
-                  <option>Abbott India Ltd.</option>
-                  <option>Mankind Pharma Ltd.</option>
-                  <option>Torrent Pharmaceuticals Ltd.</option>
-                  <option>Zydus Lifesciences Ltd.</option>
-                  <option>Lupin Limited</option>
+                  {manufacturers.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
                 </select>
               </div>
 
