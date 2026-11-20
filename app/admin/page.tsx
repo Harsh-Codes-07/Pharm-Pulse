@@ -474,6 +474,7 @@ export default function AdminPage() {
                   onChange={e => setNewManufacturer(e.target.value)}
                   style={{ width: '100%', padding: '9px 12px', background: '#0f172a', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', fontSize: '13px' }}
                 >
+                  <option>Dr. Pankaj Pharma</option>
                   <option>Sun Pharmaceutical Industries Ltd.</option>
                   <option>GlaxoSmithKline Pharmaceuticals Ltd.</option>
                   <option>Bharat Biotech International Ltd.</option>
