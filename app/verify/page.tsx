@@ -315,23 +315,57 @@ export default function VerifyPage() {
                     </span>
                   </div>
 
-                  <div style={{ fontSize: '14px', lineHeight: '1.8', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Medicine:</span>
-                      <strong style={{ textAlign: 'right' }}>{verificationResult.drugName}</strong>
+                  {/* Rich Medicine Verification Details (Read-Only for Chemist) */}
+                  <div style={{ fontSize: '13px', lineHeight: '1.6', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', background: 'rgba(0,0,0,0.25)', padding: '14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div>
+                        <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Medicine Name & Dosage</span>
+                        <strong style={{ color: '#fff', fontSize: '14px' }}>{verificationResult.drugName}</strong>
+                      </div>
+                      <div>
+                        <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Batch ID</span>
+                        <strong style={{ fontFamily: 'monospace', color: '#10d6b2', fontSize: '14px' }}>{verificationResult.batchNumber}</strong>
+                      </div>
+                      <div>
+                        <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Manufacturer</span>
+                        <strong style={{ color: '#fff' }}>{verificationResult.manufacturer}</strong>
+                      </div>
+                      {verificationResult.marketedBy && (
+                        <div>
+                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Marketed By</span>
+                          <strong style={{ color: '#fff' }}>{verificationResult.marketedBy}</strong>
+                        </div>
+                      )}
+                      <div>
+                        <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Plant Location</span>
+                        <strong style={{ color: '#fff' }}>📍 {verificationResult.location}</strong>
+                      </div>
+                      {verificationResult.price && (
+                        <div>
+                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Maximum Retail Price (MRP)</span>
+                          <strong style={{ color: '#10d6b2' }}>{verificationResult.price}</strong>
+                        </div>
+                      )}
+                      {verificationResult.manufactureDate && (
+                        <div>
+                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Date of Manufacture (MFG)</span>
+                          <strong style={{ color: '#cbd5e1' }}>📅 {verificationResult.manufactureDate}</strong>
+                        </div>
+                      )}
+                      {verificationResult.expiryDate && (
+                        <div>
+                          <span style={{ color: '#94a3b8', display: 'block', fontSize: '11px' }}>Date of Expiry (EXP)</span>
+                          <strong style={{ color: '#f59e0b' }}>⏳ {verificationResult.expiryDate}</strong>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Manufacturer:</span>
-                      <strong style={{ textAlign: 'right' }}>{verificationResult.manufacturer}</strong>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Batch ID:</span>
-                      <strong style={{ fontFamily: 'monospace', color: '#10d6b2' }}>{verificationResult.batchNumber}</strong>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#94a3b8' }}>Plant Location:</span>
-                      <strong style={{ textAlign: 'right' }}>📍 {verificationResult.location}</strong>
-                    </div>
+
+                    {verificationResult.contents && (
+                      <div style={{ background: 'rgba(16,214,178,0.05)', border: '1px solid rgba(16,214,178,0.18)', padding: '10px 14px', borderRadius: '8px', fontSize: '12px' }}>
+                        <span style={{ color: '#10d6b2', fontWeight: 600 }}>Active Ingredients & Contents: </span>
+                        <span style={{ color: '#e2e8f0' }}>{verificationResult.contents}</span>
+                      </div>
+                    )}
                   </div>
 
                   {verificationResult.warning && (

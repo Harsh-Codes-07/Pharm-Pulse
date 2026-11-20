@@ -24,7 +24,12 @@ const initialBatches = [
     drugName: "Pan-D (Pantoprazole + Domperidone) · 10s",
     batchNumber: "IN-PAR-2026-001",
     manufacturer: "Sun Pharmaceutical Industries Ltd.",
-    location: "Halol, Gujarat, India",
+    location: "Halol Plant, Gujarat, India",
+    marketedBy: "Sun Pharma Laboratories Ltd.",
+    manufactureDate: "2026-01-15",
+    expiryDate: "2028-12-31",
+    price: "₹198.50",
+    contents: "Pantoprazole Sodium IP 40mg + Domperidone IP 30mg",
     status: "Active",
     cloneAttempts: 0,
     adminCode: "1234"
@@ -33,7 +38,12 @@ const initialBatches = [
     drugName: "Augmentin 625 Duo · 10s",
     batchNumber: "IN-AUG-2026-901",
     manufacturer: "GlaxoSmithKline Pharmaceuticals Ltd.",
-    location: "Nashik, Maharashtra, India",
+    location: "Nashik Plant, Maharashtra, India",
+    marketedBy: "GSK Pharmaceuticals India Ltd.",
+    manufactureDate: "2026-02-10",
+    expiryDate: "2028-01-31",
+    price: "₹223.40",
+    contents: "Amoxicillin IP 500mg + Potassium Clavulanate IP 125mg",
     status: "Active",
     cloneAttempts: 0,
     adminCode: "7788"
@@ -43,6 +53,11 @@ const initialBatches = [
     batchNumber: "IN-COV-2026-889",
     manufacturer: "Bharat Biotech International Ltd.",
     location: "Genome Valley, Hyderabad, India",
+    marketedBy: "Bharat Biotech International Ltd.",
+    manufactureDate: "2026-03-01",
+    expiryDate: "2027-02-28",
+    price: "₹1,200.00",
+    contents: "Whole-virion inactivated SARS-CoV-2 antigen 6µg with Algel-IMDG adjuvant",
     status: "Active",
     cloneAttempts: 0,
     adminCode: "5544"
@@ -216,7 +231,18 @@ app.get("/api/admin/batches", (req, res) => {
 // 2. Mint / Register Batch (Manufacturer Admin)
 app.post("/api/drugs/mint", async (req, res) => {
   try {
-    const { drugName, batchNumber, manufacturer, location, adminCode } = req.body;
+    const {
+      drugName,
+      batchNumber,
+      manufacturer,
+      location,
+      adminCode,
+      manufactureDate,
+      expiryDate,
+      marketedBy,
+      price,
+      contents
+    } = req.body;
 
     if (!batchNumber || !drugName) {
       return res.status(400).json({ error: "Drug name and batch number are required." });
@@ -252,7 +278,13 @@ app.post("/api/drugs/mint", async (req, res) => {
       status: "Active",
       cloneAttempts: 0,
       adminCode: code,
-      txHash
+      txHash,
+      // New optional fields (store as provided, default to empty string)
+      manufactureDate: manufactureDate || "",
+      expiryDate: expiryDate || "",
+      marketedBy: marketedBy || "",
+      price: price || "",
+      contents: contents || ""
     };
 
     batches.unshift(newBatch);
@@ -267,6 +299,45 @@ app.post("/api/drugs/mint", async (req, res) => {
   } catch (error) {
     console.error("Mint error:", error);
     res.status(500).json({ error: error.message || "Failed to mint batch" });
+  }
+});
+
+// 9. Update Batch (Admin only) – edit existing batch fields
+app.put("/api/admin/batch/:batchNumber", (req, res) => {
+  try {
+    const batchNumber = decodeURIComponent(req.params.batchNumber).trim();
+    const batch = batches.find(b => b.batchNumber.toLowerCase() === batchNumber.toLowerCase());
+    if (!batch) {
+      return res.status(404).json({ error: "Batch not found." });
+    }
+    const {
+      drugName,
+      manufacturer,
+      location,
+      manufactureDate,
+      expiryDate,
+      marketedBy,
+      price,
+      contents,
+      adminCode,
+      status
+    } = req.body;
+
+    if (drugName !== undefined) batch.drugName = drugName.trim();
+    if (manufacturer !== undefined) batch.manufacturer = manufacturer.trim();
+    if (location !== undefined) batch.location = location.trim();
+    if (manufactureDate !== undefined) batch.manufactureDate = manufactureDate.trim();
+    if (expiryDate !== undefined) batch.expiryDate = expiryDate.trim();
+    if (marketedBy !== undefined) batch.marketedBy = marketedBy.trim();
+    if (price !== undefined) batch.price = price.trim();
+    if (contents !== undefined) batch.contents = contents.trim();
+    if (adminCode !== undefined && adminCode.trim() !== "") batch.adminCode = adminCode.trim();
+    if (status !== undefined) batch.status = status;
+
+    saveBatches(batches);
+    res.json({ success: true, message: `Batch ${batchNumber} updated successfully.`, batch });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to update batch" });
   }
 });
 
